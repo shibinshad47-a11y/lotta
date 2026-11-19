@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="lottaGrad" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#a855f7"/>
+    </linearGradient>
+    <linearGradient id="lottaInner" x1="16" y1="16" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e0e7ff"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#lottaGrad)"/>
+  <path d="M21 18.5C21 16.567 22.567 15 24.5 15H26.5C28.433 15 30 16.567 30 18.5V35H42.5C44.433 35 46 36.567 46 38.5V40.5C46 42.433 44.433 44 42.5 44H24.5C22.567 44 21 42.433 21 40.5V18.5Z" fill="url(#lottaInner)"/>
+  <circle cx="42" cy="22" r="5" fill="#38bdf8"/>
+  <circle cx="42" cy="22" r="2.2" fill="#ffffff"/>
+</svg>

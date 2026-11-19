@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#070b18" />
+  <title>LOTTA — Connect. Chat. Share.</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <!-- Ambient Background Glows -->
+  <div class="ambient-bg" aria-hidden="true">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- ================= AUTH VIEW ================= -->
+  <section id="auth-view" class="auth-view">
+    <div class="auth-shell">
+      <div class="auth-hero">
+        <div class="brand-lockup brand-lockup-lg">
+          <div class="brand-mark">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="authLogoGrad" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="50%" stop-color="#6366f1"/>
+                  <stop offset="100%" stop-color="#a855f7"/>
+                </linearGradient>
+              </defs>
+              <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#authLogoGrad)"/>
+              <path d="M21 18.5C21 16.567 22.567 15 24.5 15H26.5C28.433 15 30 16.567 30 18.5V35H42.5C44.433 35 46 36.567 46 38.5V40.5C46 42.433 44.433 44 42.5 44H24.5C22.567 44 21 42.433 21 40.5V18.5Z" fill="#ffffff"/>
+              <circle cx="42.5" cy="22" r="5.2" fill="#38bdf8"/>
+              <circle cx="42.5" cy="22" r="2.2" fill="#ffffff"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="brand-name">LOTTA</h1>
+            <p class="brand-tagline">Connect. Chat. Share.</p>
+          </div>
+        </div>
+
+        <h2 class="hero-headline">
+          Messaging built for <span class="gradient-text">real moments</span>.
+        </h2>
+        <p class="hero-copy">
+          Instant private &amp; group conversations, live camera photo captures, multi-photo gallery sharing, voice notes, stickers, and real-time read receipts — all inside one ultra-smooth workspace.
+        </p>
+
+        <div class="feature-grid">
+          <div class="feature-pill">
+            <span class="fp-icon">⚡</span>
+            <div>
+              <strong>Real-Time Delivery</strong>
+              <small>Instant sync, typing &amp; read receipts</small>
+            </div>
+          </div>
+          <div class="feature-pill">
+            <span class="fp-icon">📸</span>
+            <div>
+              <strong>Live Camera &amp; Gallery</strong>
+              <small>Front/rear capture &amp; multi-photo send</small>
+            </div>
+          </div>
+          <div class="feature-pill">
+            <span class="fp-icon">🎙️</span>
+            <div>
+              <strong>Voice &amp; Rich Media</strong>
+              <small>Voice notes, videos, stickers &amp; GIFs</small>
+            </div>
+          </div>
+          <div class="feature-pill">
+            <span class="fp-icon">🛡️</span>
+            <div>
+              <strong>Private &amp; Authorized</strong>
+              <small>Salted auth, strict chat access control</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="auth-card glass-panel">
+        <div class="auth-tabs" role="tablist">
+          <button id="tab-login" class="auth-tab active" data-auth-tab="login" role="tab" aria-selected="true">Sign In</button>
+          <button id="tab-register" class="auth-tab" data-auth-tab="register" role="tab" aria-selected="false">Create Account</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form" autocomplete="on">
+          <div class="field-group">
+            <label for="login-identifier">Email or Username</label>
+            <input id="login-identifier" type="text" placeholder="you@example.com or @username" required autocomplete="username" />
+          </div>
+          <div class="field-group">
+            <label for="login-password">Password</label>
+            <div class="password-wrap">
+              <input id="login-password" type="password" placeholder="Enter your password" required autocomplete="current-password" />
+              <button type="button" class="icon-btn toggle-pw" data-target="login-password" title="Show/hide password" aria-label="Toggle password visibility">👁️</button>
+            </div>
+          </div>
+          <div id="login-error" class="form-error hidden"></div>
+          <button type="submit" class="btn btn-primary btn-full" id="login-submit">
+            <span>Sign In to LOTTA</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="auth-form hidden" autocomplete="on">
+          <div class="avatar-upload-row">
+            <div id="reg-avatar-preview" class="avatar-upload-circle">
+              <span>📷</span>
+            </div>
+            <div class="avatar-upload-meta">
+              <label for="reg-avatar-input" class="btn btn-secondary btn-sm">Upload Profile Photo</label>
+              <input id="reg-avatar-input" type="file" accept="image/*" class="hidden" />
+              <small id="reg-avatar-name">Optional · JPG, PNG, WebP</small>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="reg-name">Full Name</label>
+              <input id="reg-name" type="text" placeholder="Alex Rivera" required autocomplete="name" />
+            </div>
+            <div class="field-group">
+              <label for="reg-username">Username</label>
+              <input id="reg-username" type="text" placeholder="alex_r" autocomplete="username" />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="reg-email">Email Address</label>
+            <input id="reg-email" type="email" placeholder="alex@example.com" required autocomplete="email" />
+          </div>
+
+          <div class="field-group">
+            <label for="reg-password">Password</label>
+            <div class="password-wrap">
+              <input id="reg-password" type="password" placeholder="Minimum 6 characters" required minlength="6" autocomplete="new-password" />
+              <button type="button" class="icon-btn toggle-pw" data-target="reg-password" title="Show/hide password" aria-label="Toggle password visibility">👁️</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="reg-status">Personal Status</label>
+            <input id="reg-status" type="text" placeholder="Available · Ready to chat ✨" maxlength="120" />
+          </div>
+
+          <div id="register-error" class="form-error hidden"></div>
+          <button type="submit" class="btn btn-primary btn-full" id="register-submit">
+            <span>Create LOTTA Account</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= MAIN APP VIEW ================= -->
+  <div id="app-view" class="app-view hidden">
+    <!-- Left Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <header class="sidebar-header">
+        <div class="brand-lockup">
+          <div class="brand-mark brand-mark-sm">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="sideLogoGrad" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="50%" stop-color="#6366f1"/>
+                  <stop offset="100%" stop-color="#a855f7"/>
+                </linearGradient>
+              </defs>
+              <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#sideLogoGrad)"/>
+              <path d="M21 18.5C21 16.567 22.567 15 24.5 15H26.5C28.433 15 30 16.567 30 18.5V35H42.5C44.433 35 46 36.567 46 38.5V40.5C46 42.433 44.433 44 42.5 44H24.5C22.567 44 21 42.433 21 40.5V18.5Z" fill="#ffffff"/>
+              <circle cx="42.5" cy="22" r="5.2" fill="#38bdf8"/>
+              <circle cx="42.5" cy="22" r="2.2" fill="#ffffff"/>
+            </svg>
+          </div>
+          <div>
+            <span class="brand-name-sm">LOTTA</span>
+            <span class="connection-badge" id="connection-badge" title="Real-time connection status">● Live</span>
+          </div>
+        </div>
+
+        <div class="sidebar-header-actions">
+          <button id="btn-discover" class="icon-btn" title="Find People &amp; New Chat" aria-label="Find People">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+          </button>
+          <button id="btn-new-group" class="icon-btn" title="Create Group Chat" aria-label="Create Group Chat">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          </button>
+          <button id="btn-profile-open" class="avatar-btn" title="Edit Profile &amp; Settings" aria-label="Profile Settings">
+            <div id="me-avatar" class="avatar avatar-sm"></div>
+          </button>
+        </div>
+      </header>
+
+      <!-- Search Bar -->
+      <div class="sidebar-search">
+        <div class="search-input-wrap">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="sidebar-search-input" type="search" placeholder="Search chats or @username..." autocomplete="off" />
+        </div>
+        <button id="btn-new-chat-fab" class="btn-new-chat" title="New Conversation">+</button>
+      </div>
+
+      <!-- Filter Pills -->
+      <div class="filter-pills" role="tablist">
+        <button class="filter-pill active" data-filter="all">All</button>
+        <button class="filter-pill" data-filter="unread">Unread</button>
+        <button class="filter-pill" data-filter="groups">Groups</button>
+        <button class="filter-pill" data-filter="contacts">Contacts</button>
+      </div>
+
+      <!-- Conversations List -->
+      <div id="conversation-list" class="conversation-list"></div>
+
+      <!-- Sidebar Footer: Current User Quick Bar -->
+      <footer class="sidebar-footer">
+        <button id="me-bar-profile" class="me-bar-btn">
+          <div id="me-bar-avatar" class="avatar avatar-sm"></div>
+          <div class="me-bar-info">
+            <strong id="me-bar-name">Loading...</strong>
+            <small id="me-bar-status">@username</small>
+          </div>
+        </button>
+        <button id="btn-logout" class="icon-btn icon-btn-danger" title="Sign Out" aria-label="Sign Out">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </button>
+      </footer>
+    </aside>
+
+    <!-- Main Chat Area -->
+    <main id="chat-main" class="chat-main">
+      <!-- Empty State -->
+      <div id="chat-empty-state" class="chat-empty-state">
+        <div class="empty-card glass-panel">
+          <div class="brand-mark brand-mark-xl">
+            <svg viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="emptyLogoGrad" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stop-color="#38bdf8"/>
+                  <stop offset="50%" stop-color="#6366f1"/>
+                  <stop offset="100%" stop-color="#a855f7"/>
+                </linearGradient>
+              </defs>
+              <rect x="4" y="4" width="56" height="56" rx="18" fill="url(#emptyLogoGrad)"/>
+              <path d="M21 18.5C21 16.567 22.567 15 24.5 15H26.5C28.433 15 30 16.567 30 18.5V35H42.5C44.433 35 46 36.567 46 38.5V40.5C46 42.433 44.433 44 42.5 44H24.5C22.567 44 21 42.433 21 40.5V18.5Z" fill="#ffffff"/>
+              <circle cx="42.5" cy="22" r="5.2" fill="#38bdf8"/>
+              <circle cx="42.5" cy="22" r="2.2" fill="#ffffff"/>
+            </svg>
+          </div>
+          <h2>Welcome to LOTTA</h2>
+          <p class="empty-tagline">Connect. Chat. Share.</p>
+          <p class="empty-desc">
+            Select a conversation from the sidebar or discover friends to start messaging in real time with photos, live camera captures, emojis, stickers, and voice notes.
+          </p>
+          <div class="empty-actions">
+            <button id="empty-find-people" class="btn btn-primary">Find People &amp; Start Chat</button>
+            <button id="empty-create-group" class="btn btn-secondary">Create Group Chat</button>
+          </div>
+          <p class="empty-tip">
+            Tip: Open LOTTA in a second browser window or on your phone on the same Wi-Fi, create a second account, and watch real-time messaging, typing indicators, camera photos &amp; read receipts live!
+          </p>
+        </div>
+      </div>
+
+      <!-- Active Conversation Workspace -->
+      <div id="chat-workspace" class="chat-workspace hidden">
+        <!-- Drag & Drop Overlay -->
+        <div id="drop-overlay" class="drop-overlay hidden">
+          <div class="drop-overlay-inner">
+            <span class="drop-icon">📎</span>
+            <strong>Drop photos, videos, or files to send</strong>
+            <small>Up to 25 MB per file</small>
+          </div>
+        </div>
+
+        <!-- Chat Header -->
+        <header class="chat-header">
+          <div class="chat-header-left">
+            <button id="btn-mobile-back" class="icon-btn mobile-only" aria-label="Back to chats">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div id="chat-header-clickable" class="chat-header-identity">
+              <div id="chat-header-avatar" class="avatar avatar-md"></div>
+              <div class="chat-header-meta">
+                <h3 id="chat-header-name">Conversation</h3>
+                <p id="chat-header-status" class="chat-header-status">Offline</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="chat-header-actions">
+            <button id="btn-chat-search" class="icon-btn" title="Search in conversation" aria-label="Search messages">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </button>
+            <button id="btn-chat-info" class="icon-btn" title="Chat Details &amp; Media" aria-label="Chat Info">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- In-Chat Search Bar -->
+        <div id="chat-search-bar" class="chat-search-bar hidden">
+          <input id="chat-search-input" type="search" placeholder="Search messages in this chat..." />
+          <span id="chat-search-count" class="chat-search-count"></span>
+          <button id="btn-chat-search-close" class="icon-btn" aria-label="Close search">✕</button>
+        </div>
+
+        <!-- Blocked Banner -->
+        <div id="blocked-banner" class="blocked-banner hidden">
+          <span id="blocked-banner-text">You blocked this user.</span>
+          <button id="btn-unblock-inline" class="btn btn-secondary btn-sm">Unblock</button>
+        </div>
+
+        <!-- Messages Stream -->
+        <div id="messages-scroll" class="messages-scroll">
+          <div id="messages-list" class="messages-list"></div>
+          <div id="typing-indicator" class="typing-bubble hidden">
+            <span id="typing-text">Someone is typing</span>
+            <span class="typing-dots"><i></i><i></i><i></i></span>
+          </div>
+        </div>
+
+        <!-- Scroll to Bottom Button -->
+        <button id="btn-scroll-bottom" class="scroll-bottom-btn hidden" aria-label="Scroll to latest messages">
+          ↓ <span id="scroll-unread-badge" class="hidden">0</span>
+        </button>
+
+        <!-- Emoji / Sticker / GIF Floating Popover -->
+        <div id="media-picker" class="media-picker glass-panel hidden">
+          <div class="picker-tabs">
+            <button class="picker-tab active" data-picker-tab="emoji">😊 Emoji</button>
+            <button class="picker-tab" data-picker-tab="stickers">✨ Stickers</button>
+            <button class="picker-tab" data-picker-tab="gifs">🎞️ GIFs</button>
+          </div>
+          <div class="picker-search-wrap">
+            <input id="picker-search-input" type="search" placeholder="Search emojis..." autocomplete="off" />
+          </div>
+          <div id="emoji-categories" class="emoji-categories"></div>
+          <div id="picker-body" class="picker-body"></div>
+        </div>
+
+        <!-- Reply Preview Bar -->
+        <div id="reply-bar" class="reply-bar hidden">
+          <div class="reply-bar-accent"></div>
+          <div class="reply-bar-content">
+            <strong id="reply-bar-sender">Replying to</strong>
+            <p id="reply-bar-text"></p>
+          </div>
+          <button id="btn-reply-cancel" class="icon-btn" aria-label="Cancel reply">✕</button>
+        </div>
+
+        <!-- Pending Attachments Preview Tray -->
+        <div id="attachment-tray" class="attachment-tray hidden">
+          <div id="attachment-tray-list" class="attachment-tray-list"></div>
+        </div>
+
+        <!-- Voice Recording Bar -->
+        <div id="voice-bar" class="voice-bar hidden">
+          <div class="voice-rec-dot"></div>
+          <span id="voice-timer" class="voice-timer">0:00</span>
+          <canvas id="voice-wave-canvas" class="voice-wave-canvas" width="240" height="34"></canvas>
+          <button id="btn-voice-cancel" class="btn btn-secondary btn-sm">Cancel</button>
+          <button id="btn-voice-send" class="btn btn-primary btn-sm">Send Voice</button>
+        </div>
+
+        <!-- Message Composer -->
+        <div id="composer-bar" class="composer-bar">
+          <button id="btn-emoji-picker" class="composer-icon-btn" title="Emojis, Stickers &amp; GIFs" aria-label="Open emoji picker">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+          </button>
+
+          <button id="btn-attach-gallery" class="composer-icon-btn" title="Attach Photos, Videos or Files" aria-label="Attach files from gallery">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+          </button>
+          <input id="gallery-file-input" type="file" multiple accept="image/*,video/*,audio/*,.pdf,.txt,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.zip,.csv" class="hidden" />
+
+          <button id="btn-open-camera" class="composer-icon-btn" title="Open Live Camera" aria-label="Take a photo with camera">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </button>
+
+          <div class="composer-input-wrap">
+            <textarea id="message-input" rows="1" placeholder="Message..." autocomplete="off"></textarea>
+          </div>
+
+          <button id="btn-voice-record" class="composer-icon-btn" title="Record Voice Message" aria-label="Record voice message">
+            <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+
+          <button id="btn-send-message" class="send-btn" title="Send Message" aria-label="Send message">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Right Info & Media Drawer -->
+    <aside id="info-drawer" class="info-drawer hidden">
+      <header class="drawer-header">
+        <h3 id="drawer-title">Chat Info</h3>
+        <button id="btn-drawer-close" class="icon-btn" aria-label="Close panel">✕</button>
+      </header>
+      <div id="drawer-content" class="drawer-content"></div>
+    </aside>
+  </div>
+
+  <!-- ================= LIVE CAMERA MODAL ================= -->
+  <div id="camera-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Live Camera">
+    <div class="modal-card camera-modal-card glass-panel">
+      <header class="modal-header">
+        <div>
+          <h3>Live Camera</h3>
+          <small id="camera-subtitle">Capture &amp; share directly into chat</small>
+        </div>
+        <button id="btn-camera-close" class="icon-btn" aria-label="Close camera">✕</button>
+      </header>
+
+      <div class="camera-stage">
+        <video id="camera-video" autoplay playsinline muted></video>
+        <canvas id="camera-canvas" class="hidden"></canvas>
+        <img id="camera-preview-img" class="hidden" alt="Captured photo preview" />
+        <div id="camera-flash" class="camera-flash"></div>
+        <div id="camera-error" class="camera-error hidden">
+          <span class="camera-error-icon">📷</span>
+          <strong id="camera-error-title">Camera unavailable</strong>
+          <p id="camera-error-msg">Please allow camera permission in your browser settings.</p>
+          <button id="btn-camera-retry" class="btn btn-primary btn-sm">Try Again</button>
+        </div>
+      </div>
+
+      <!-- Live Capture Controls -->
+      <div id="camera-live-controls" class="camera-controls">
+        <button id="btn-camera-mirror" class="btn btn-secondary btn-sm" title="Mirror preview">🪞 Mirror</button>
+        <button id="btn-camera-shutter" class="shutter-btn" aria-label="Capture Photo">
+          <span></span>
+        </button>
+        <button id="btn-camera-switch" class="btn btn-secondary btn-sm" title="Switch Front/Rear Camera">🔄 Flip</button>
+      </div>
+
+      <!-- Preview Controls -->
+      <div id="camera-preview-controls" class="camera-preview-controls hidden">
+        <input id="camera-caption-input" type="text" placeholder="Add a caption (optional)..." />
+        <div class="camera-preview-btns">
+          <button id="btn-camera-retake" class="btn btn-secondary">Retake</button>
+          <button id="btn-camera-send" class="btn btn-primary">Send Photo →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= FULLSCREEN LIGHTBOX MODAL ================= -->
+  <div id="lightbox-modal" class="lightbox-backdrop hidden" role="dialog" aria-modal="true" aria-label="Image Viewer">
+    <header class="lightbox-header">
+      <div class="lightbox-meta">
+        <strong id="lightbox-sender"></strong>
+        <small id="lightbox-time"></small>
+      </div>
+      <div class="lightbox-actions">
+        <button id="btn-lightbox-zoom" class="icon-btn" title="Toggle Zoom">🔍</button>
+        <a id="btn-lightbox-download" class="btn btn-primary btn-sm" download>⬇ Download</a>
+        <button id="btn-lightbox-close" class="icon-btn" aria-label="Close viewer">✕</button>
+      </div>
+    </header>
+    <div class="lightbox-body">
+      <button id="btn-lightbox-prev" class="lightbox-nav prev" aria-label="Previous image">‹</button>
+      <img id="lightbox-img" alt="Full screen media" />
+      <button id="btn-lightbox-next" class="lightbox-nav next" aria-label="Next image">›</button>
+    </div>
+    <footer id="lightbox-caption" class="lightbox-caption"></footer>
+  </div>
+
+  <!-- ================= DISCOVER PEOPLE MODAL ================= -->
+  <div id="discover-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Discover People">
+    <div class="modal-card glass-panel">
+      <header class="modal-header">
+        <div>
+          <h3>Find People on LOTTA</h3>
+          <small>Search by @username or display name to chat or add contacts</small>
+        </div>
+        <button class="icon-btn" data-close-modal="discover-modal" aria-label="Close">✕</button>
+      </header>
+      <div class="modal-body">
+        <div class="search-input-wrap modal-search">
+          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input id="discover-search-input" type="search" placeholder="Search users by name or @username..." autocomplete="off" />
+        </div>
+        <div id="discover-user-list" class="user-pick-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= CREATE GROUP MODAL ================= -->
+  <div id="group-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Create Group Chat">
+    <div class="modal-card glass-panel">
+      <header class="modal-header">
+        <div>
+          <h3>Create Group Chat</h3>
+          <small>Bring friends together in one real-time room</small>
+        </div>
+        <button class="icon-btn" data-close-modal="group-modal" aria-label="Close">✕</button>
+      </header>
+      <form id="group-form" class="modal-body">
+        <div class="avatar-upload-row">
+          <div id="group-avatar-preview" class="avatar-upload-circle"><span>👥</span></div>
+          <div class="avatar-upload-meta">
+            <label for="group-avatar-input" class="btn btn-secondary btn-sm">Group Photo</label>
+            <input id="group-avatar-input" type="file" accept="image/*" class="hidden" />
+            <small id="group-avatar-name">Optional</small>
+          </div>
+        </div>
+        <div class="field-group">
+          <label for="group-name-input">Group Name</label>
+          <input id="group-name-input" type="text" placeholder="Weekend Crew, Design Team..." required minlength="2" maxlength="60" />
+        </div>
+        <div class="field-group">
+          <label for="group-desc-input">Description (optional)</label>
+          <input id="group-desc-input" type="text" placeholder="What is this group about?" maxlength="240" />
+        </div>
+        <div class="field-group">
+          <label>Select Members (<span id="group-selected-count">0</span> selected)</label>
+          <div id="group-members-picker" class="user-pick-list user-pick-list-sm"></div>
+        </div>
+        <div id="group-error" class="form-error hidden"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="group-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-create-group-submit">Create Group</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= PROFILE & SETTINGS MODAL ================= -->
+  <div id="profile-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Profile Settings">
+    <div class="modal-card glass-panel">
+      <header class="modal-header">
+        <div>
+          <h3>Profile &amp; Settings</h3>
+          <small>Customize your LOTTA identity and privacy</small>
+        </div>
+        <button class="icon-btn" data-close-modal="profile-modal" aria-label="Close">✕</button>
+      </header>
+      <div class="modal-body">
+        <div class="modal-subtabs">
+          <button class="subtab active" data-profile-tab="edit">Edit Profile</button>
+          <button class="subtab" data-profile-tab="blocked">Blocked Users</button>
+        </div>
+
+        <form id="profile-form" class="profile-panel">
+          <div class="avatar-upload-row">
+            <div id="profile-avatar-preview" class="avatar-upload-circle"></div>
+            <div class="avatar-upload-meta">
+              <div class="btn-row">
+                <label for="profile-avatar-input" class="btn btn-secondary btn-sm">Change Photo</label>
+                <button type="button" id="btn-remove-avatar" class="btn btn-ghost btn-sm">Remove</button>
+              </div>
+              <input id="profile-avatar-input" type="file" accept="image/*" class="hidden" />
+              <small>Square photos look best · up to 25MB</small>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="prof-name">Display Name</label>
+              <input id="prof-name" type="text" required minlength="2" />
+            </div>
+            <div class="field-group">
+              <label for="prof-username">Username</label>
+              <input id="prof-username" type="text" required />
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="prof-status">Personal Status</label>
+            <input id="prof-status" type="text" maxlength="120" placeholder="Available · In the zone" />
+          </div>
+
+          <div class="field-group">
+            <label for="prof-bio">Bio</label>
+            <textarea id="prof-bio" rows="2" maxlength="280" placeholder="Tell friends a little about yourself..."></textarea>
+          </div>
+
+          <div id="profile-error" class="form-error hidden"></div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-close-modal="profile-modal">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-profile">Save Changes</button>
+          </div>
+        </form>
+
+        <div id="blocked-users-panel" class="profile-panel hidden">
+          <div id="blocked-users-list" class="user-pick-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= REPORT USER MODAL ================= -->
+  <div id="report-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Report User">
+    <div class="modal-card modal-card-sm glass-panel">
+      <header class="modal-header">
+        <div>
+          <h3>Report User</h3>
+          <small id="report-target-label">Report inappropriate behavior</small>
+        </div>
+        <button class="icon-btn" data-close-modal="report-modal" aria-label="Close">✕</button>
+      </header>
+      <form id="report-form" class="modal-body">
+        <div class="field-group">
+          <label for="report-reason">Reason</label>
+          <select id="report-reason" required>
+            <option value="Spam or Scam">Spam or Scam</option>
+            <option value="Harassment or Bullying">Harassment or Bullying</option>
+            <option value="Inappropriate Content">Inappropriate Content</option>
+            <option value="Impersonation">Impersonation</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="report-details">Additional Details (optional)</label>
+          <textarea id="report-details" rows="3" maxlength="1000" placeholder="Describe what happened..."></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="report-modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Submit Report</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= DELETE MESSAGE MODAL ================= -->
+  <div id="delete-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-label="Delete Message">
+    <div class="modal-card modal-card-sm glass-panel">
+      <header class="modal-header">
+        <h3>Delete Message</h3>
+        <button class="icon-btn" data-close-modal="delete-modal" aria-label="Close">✕</button>
+      </header>
+      <div class="modal-body">
+        <p class="delete-desc">Choose how you would like to remove this message:</p>
+        <div class="delete-actions">
+          <button id="btn-delete-everyone" class="btn btn-danger btn-full">Delete for Everyone</button>
+          <button id="btn-delete-me" class="btn btn-secondary btn-full">Delete for Me</button>
+          <button class="btn btn-ghost btn-full" data-close-modal="delete-modal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="/js/app.js"></script>
+</body>
+</html>
