@@ -5,13 +5,14 @@ import { Logo } from '../common/Logo';
 import { Avatar } from '../common/Avatar';
 import { useAuth } from '../../context/AuthContext';
 import { Conversation, Contact } from '../../types/database';
+import { chatService } from '../../services/chatService';
 
 interface ChatSidebarProps {
   conversations: Conversation[];
   contacts: Contact[];
   activeConversationId?: string;
   onSelectConversation: (id: string) => void;
-  onOpenAddContact: () => void;
+  onOpenAddContact: (query?: string) => void;
   onOpenInviteModal: () => void;
   isLoading: boolean;
 }
@@ -79,7 +80,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
         {/* Quick action icons */}
         <div className="flex items-center gap-1">
           <button
-            onClick={onOpenAddContact}
+            onClick={() => onOpenAddContact()}
             title="Add contact by phone"
             className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
           >
@@ -233,16 +234,24 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   <MessageSquare className="w-6 h-6" />
                 </div>
                 <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                  {searchQuery ? 'No matching chats found' : 'No chats yet'}
+                  {searchQuery ? `No chats matching "${searchQuery}"` : 'No chats yet'}
                 </h4>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 max-w-xs mx-auto">
                   {searchQuery
-                    ? 'Try searching with a different name or keyword'
+                    ? 'Start a new conversation with this number or username:'
                     : 'Add a contact by phone number or invite friends to start chatting.'}
                 </p>
-                {!searchQuery && (
+                {searchQuery ? (
                   <button
-                    onClick={onOpenAddContact}
+                    onClick={() => onOpenAddContact(searchQuery)}
+                    className="px-4 py-2 bg-brand-gradient text-white text-xs font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm inline-flex items-center gap-1.5"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    Chat with "{searchQuery}"
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => onOpenAddContact()}
                     className="px-4 py-2 bg-brand-gradient text-white text-xs font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm inline-flex items-center gap-1.5"
                   >
                     <UserPlus className="w-3.5 h-3.5" />
@@ -267,11 +276,16 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                     key={contact.id}
                     onClick={async () => {
                       if (profile) {
-                        const conv = conversations.find(c => c.other_user?.id === p.id);
-                        if (conv) {
-                          onSelectConversation(conv.id);
-                        } else {
-                          onOpenAddContact();
+                        try {
+                          const existingConv = conversations.find(c => c.other_user?.id === p.id);
+                          if (existingConv) {
+                            onSelectConversation(existingConv.id);
+                          } else {
+                            const newConv = await chatService.getOrCreateConversation(profile.id, p.id);
+                            onSelectConversation(newConv.id);
+                          }
+                        } catch (err) {
+                          console.error('Failed to open conversation:', err);
                         }
                       }
                     }}
@@ -305,7 +319,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
                   Find friends by their phone number or send an invite link.
                 </p>
                 <button
-                  onClick={onOpenAddContact}
+                  onClick={() => onOpenAddContact()}
                   className="px-4 py-2 bg-brand-gradient text-white text-xs font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm inline-flex items-center gap-1.5"
                 >
                   <UserPlus className="w-3.5 h-3.5" />

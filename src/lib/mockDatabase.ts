@@ -92,9 +92,76 @@ export const mockDb = {
   },
 
   findProfileByPhone(phone: string): Profile | null {
-    const normalized = phone.replace(/[\s-]/g, '').trim();
+    const clean = phone.replace(/[\s-]/g, '').trim();
+    const digits = clean.replace(/\D/g, '');
     const state = loadState();
-    return state.profiles.find(p => p.phone.replace(/[\s-]/g, '').trim() === normalized) || null;
+
+    // 1. Exact match on clean string
+    const exact = state.profiles.find(p => p.phone.replace(/[\s-]/g, '').trim() === clean);
+    if (exact) return exact;
+
+    // 2. Exact match on digits
+    if (digits.length >= 6) {
+      const matchDigits = state.profiles.find(p => p.phone.replace(/\D/g, '') === digits);
+      if (matchDigits) return matchDigits;
+
+      // 3. Suffix / 10-digit match (handling country code differences like +919876543210 vs 9876543210)
+      const last10 = digits.slice(-10);
+      const matchSuffix = state.profiles.find(p => {
+        const pDigits = p.phone.replace(/\D/g, '');
+        return pDigits.slice(-10) === last10 || (last10.length >= 7 && pDigits.endsWith(last10));
+      });
+      if (matchSuffix) return matchSuffix;
+    }
+
+    // 4. Also match by username if user typed @username or username
+    const cleanUname = clean.toLowerCase().replace(/^@/, '');
+    const matchUname = state.profiles.find(p => p.username.toLowerCase() === cleanUname);
+    if (matchUname) return matchUname;
+
+    // 5. Match by name
+    if (clean.length >= 2 && !digits) {
+      const matchName = state.profiles.find(p => p.name.toLowerCase().includes(clean.toLowerCase()));
+      if (matchName) return matchName;
+    }
+
+    return null;
+  },
+
+  getOrCreateProfileByPhone(phone: string, customName?: string): Profile {
+    const state = loadState();
+    const clean = phone.replace(/[\s-]/g, '').trim();
+    const digits = clean.replace(/\D/g, '');
+
+    // Check if profile exists already
+    const existing = this.findProfileByPhone(clean);
+    if (existing) return existing;
+
+    // Create a new contact profile for this phone number
+    const newId = `user-phone-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const formattedPhone = clean.startsWith('+') ? clean : (digits ? `+${digits}` : clean);
+    const displayName = customName?.trim() || formattedPhone;
+    const username = `user_${digits.slice(-4) || Math.random().toString(36).substring(2, 6)}`;
+
+    const newProfile: Profile = {
+      id: newId,
+      name: displayName,
+      username,
+      phone: formattedPhone,
+      avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${digits || newId}`,
+      last_seen: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+    };
+
+    state.profiles.push(newProfile);
+    state.users.push({
+      id: newId,
+      username: newProfile.username,
+      passwordHash: 'password123',
+    });
+    saveState(state);
+    broadcastChannel?.postMessage({ type: 'PROFILE_CREATED', profile: newProfile });
+    return newProfile;
   },
 
   findProfileByUsername(username: string): Profile | null {

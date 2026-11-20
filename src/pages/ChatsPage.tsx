@@ -19,6 +19,7 @@ export const ChatsPage: React.FC = () => {
 
   // Modals
   const [isAddContactOpen, setIsAddContactOpen] = useState(false);
+  const [addContactInitialQuery, setAddContactInitialQuery] = useState('');
   const [isInviteOpen, setIsInviteOpen] = useState(false);
 
   // Active conversation object
@@ -69,7 +70,10 @@ export const ChatsPage: React.FC = () => {
           contacts={contacts}
           activeConversationId={conversationId}
           onSelectConversation={handleSelectConversation}
-          onOpenAddContact={() => setIsAddContactOpen(true)}
+          onOpenAddContact={(query?: string) => {
+            setAddContactInitialQuery(query || '');
+            setIsAddContactOpen(true);
+          }}
           onOpenInviteModal={() => setIsInviteOpen(true)}
           isLoading={isLoading}
         />
@@ -91,7 +95,11 @@ export const ChatsPage: React.FC = () => {
       {/* Add Contact Modal */}
       <AddContactModal
         isOpen={isAddContactOpen}
-        onClose={() => setIsAddContactOpen(false)}
+        initialQuery={addContactInitialQuery}
+        onClose={() => {
+          setIsAddContactOpen(false);
+          setAddContactInitialQuery('');
+        }}
         onOpenConversation={id => {
           loadData();
           navigate(`/chats/${id}`);

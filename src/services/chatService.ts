@@ -5,20 +5,53 @@ import { Profile, Contact, Conversation, Message } from '../types/database';
 export const chatService = {
   async searchUserByPhone(phone: string): Promise<Profile | null> {
     const cleanPhone = phone.trim().replace(/[\s-]/g, '');
+    const digitsOnly = cleanPhone.replace(/\D/g, '');
+
     if (isLiveSupabase && supabase) {
       try {
-        const { data, error } = await supabase
+        // 1. Exact phone match
+        let { data } = await supabase
           .from('profiles')
           .select('*')
           .eq('phone', cleanPhone)
           .maybeSingle();
 
-        if (error) {
-          console.error('Supabase phone search error:', error);
-          // Fallback to mock search if needed
-          return mockDb.findProfileByPhone(cleanPhone);
+        // 2. Try with '+' or without '+'
+        if (!data && digitsOnly.length >= 7) {
+          const resWithPlus = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('phone', `+${digitsOnly}`)
+            .maybeSingle();
+          if (resWithPlus.data) data = resWithPlus.data;
         }
-        return data as Profile | null;
+
+        // 3. Try ilike on digits
+        if (!data && digitsOnly.length >= 7) {
+          const resIlike = await supabase
+            .from('profiles')
+            .select('*')
+            .ilike('phone', `%${digitsOnly.slice(-10)}%`)
+            .limit(1);
+          if (resIlike.data && resIlike.data.length > 0) data = resIlike.data[0];
+        }
+
+        // 4. Try matching username
+        if (!data) {
+          const cleanUname = cleanPhone.toLowerCase().replace(/^@/, '');
+          const resUname = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('username', cleanUname)
+            .maybeSingle();
+          if (resUname.data) data = resUname.data;
+        }
+
+        if (data) {
+          return data as Profile;
+        }
+
+        return mockDb.findProfileByPhone(cleanPhone);
       } catch (err) {
         console.error('Phone search exception:', err);
         return mockDb.findProfileByPhone(cleanPhone);
@@ -26,6 +59,38 @@ export const chatService = {
     } else {
       return mockDb.findProfileByPhone(cleanPhone);
     }
+  },
+
+  async getOrCreateContactByPhone(
+    ownerId: string,
+    phone: string,
+    customName?: string
+  ): Promise<{ conversation: Conversation; contact: Contact; profile: Profile }> {
+    const cleanPhone = phone.trim().replace(/[\s-]/g, '');
+    let targetProfile = await this.searchUserByPhone(cleanPhone);
+
+    if (!targetProfile) {
+      // In mock database (or fallback), auto-create a profile for this phone number
+      targetProfile = mockDb.getOrCreateProfileByPhone(cleanPhone, customName);
+    }
+
+    // Add to contacts
+    const addResult = await this.addContact(ownerId, targetProfile.id);
+
+    // Get or create conversation
+    const conversation = await this.getOrCreateConversation(ownerId, targetProfile.id);
+
+    return {
+      conversation,
+      contact: addResult.contact || {
+        id: `contact-${Date.now()}`,
+        owner_id: ownerId,
+        contact_id: targetProfile.id,
+        created_at: new Date().toISOString(),
+        contact_profile: targetProfile,
+      },
+      profile: targetProfile,
+    };
   },
 
   async searchUserByUsername(username: string): Promise<Profile | null> {
