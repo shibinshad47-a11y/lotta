@@ -45,10 +45,10 @@ export const Avatar: React.FC<AvatarProps> = ({
   return (
     <div className={`relative inline-block shrink-0 ${className}`}>
       <div
-        className={`${sizeClasses[size]} rounded-2xl overflow-hidden shadow-soft-sm flex items-center justify-center font-medium transition-transform duration-200 ${
+        className={`${sizeClasses[size]} rounded-2xl overflow-hidden shadow-soft flex items-center justify-center font-medium transition-transform duration-200 ${
           src && !imageError
-            ? 'bg-gray-100 dark:bg-gray-800'
-            : 'bg-brand-gradient text-white'
+            ? 'bg-navy-800'
+            : 'bg-gradient-to-tr from-brand-600 via-indigo-600 to-lotta-blue text-white shadow-glow'
         }`}
       >
         {src && !imageError ? (
@@ -65,11 +65,15 @@ export const Avatar: React.FC<AvatarProps> = ({
 
       {isOnline !== undefined && (
         <span
-          className={`absolute bottom-0 right-0 rounded-full ring-white dark:ring-gray-900 ${
-            badgeSizes[size]
-          } ${isOnline ? 'bg-emerald-500' : 'bg-gray-400 dark:bg-gray-600'}`}
+          className={`absolute bottom-0 right-0 ${badgeSizes[size]} rounded-full ring-navy-950 ${
+            isOnline ? 'bg-emerald-400' : 'bg-gray-500'
+          }`}
           title={isOnline ? 'Online' : 'Offline'}
-        />
+        >
+          {isOnline && (
+            <span className="absolute inset-0 rounded-full bg-emerald-400 animate-ping opacity-75" />
+          )}
+        </span>
       )}
     </div>
   );

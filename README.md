@@ -1,84 +1,55 @@
-# Lotta — Modern Real-Time Chat Web Application
+# LOTTA — Real-Time Chat Web Application
+> **Connect. Chat. Share.**
 
-**Lotta** connects people through real-time, seamless messaging. Add contacts by phone number and invite friends with an animated personal invite link.
-
-Built with **React**, **TypeScript**, **Tailwind CSS**, and **Lovable Cloud (Supabase)**.
+Mobile-first real-time chat application built with **Next.js (App Router)**, **React**, **TypeScript**, **Tailwind CSS**, and **Supabase** (Auth, PostgreSQL, Realtime, Storage).
 
 ---
 
 ## ✨ Features
 
-- **Branding & Design**: Purple-to-blue gradient aesthetic, clean Inter font, rounded corners, soft shadows, and full Light & Dark mode support.
-- **Authentication**: Custom username-mapped Supabase authentication (`username@lotta.app`), full field validation, multi-device real-time sync, and persistent sessions.
-- **Real-Time Messaging**: Instant message delivery with Supabase Realtime / Broadcast channels, typing presence indicators, sent (`✓`) and read (`✓✓`) receipts, date separators, and auto-scrolling.
-- **Add Contacts by Phone**: Exact lookup with international country code matching, self-contact prevention, and duplicate prevention.
-- **Interactive Invite Experience**: Shareable `/invite/:username` link featuring a smooth full-screen Framer Motion welcome animation, logo scaling, popping chat bubbles, and automatic mutual contact creation on sign-up.
-- **Profile & Settings**: Custom avatar uploading with a 2 MB size limit check, display name editing, theme toggle, and account deletion confirmation modal.
-- **Supabase Backend**: Complete Postgres schema with Row Level Security (RLS) policies, automatic profile triggers, and storage bucket configuration.
+- **Branding & Design**: Dark navy, purple, and blue palette with glassmorphism and soft glowing gradients. Mobile-first app feel on phones and two-panel desktop layout.
+- **Phone OTP Authentication**: Sign in and create profiles with name and phone number (+91 country code picker default). 6-digit verification code with 30-second resend timer. Phone numbers are strictly private.
+- **Invite Friends by Link (Main Feature)**: Generate unique personal links (`/invite/<token>`). Device native share sheet (`navigator.share`) or 1-click copy. When friends join through your link, both users automatically become friends and direct chat opens immediately.
+- **Real-Time One-to-One Messaging**: Instant delivery with Supabase Realtime, typing presence indicators, sent (`✓`) and read (`✓✓`) receipts, message replies with quotes, copy, and soft delete.
+- **Searchable Emoji Picker**: Emojis with instant keyword search and recently used emojis.
+- **Gallery Photos & Full-Screen Viewer**: Send multiple photos with thumbnails preview and optional captions. Tap any photo for full-screen viewer and one-click download.
+- **Live Camera**: Capture photos directly inside chat with front/rear camera toggle, live canvas snapshot, retake/send buttons, and clean stream termination.
+- **Database Security**: 10 PostgreSQL tables with Row Level Security (RLS) on every table, indexes, and foreign keys.
 
 ---
 
 ## 🚀 Getting Started
 
-### 1. Prerequisites
-- Node.js (v18+)
-- npm or yarn
-
-### 2. Installation
+### 1. Install Dependencies
 ```bash
-git clone https://github.com/shibinshad47-a11y/chating-lotta.git
-cd chating-lotta
 npm install
 ```
 
-### 3. Environment Variables (Optional for Live Supabase)
-Copy the example environment file:
+### 2. Environment Variables
+Copy `.env.example` to `.env.local`:
 ```bash
-cp .env.example .env
+cp .env.example .env.local
 ```
-Fill in your Supabase credentials:
+
+Fill in your Supabase project credentials:
 ```env
-VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=your-anon-public-key
+NEXT_PUBLIC_SUPABASE_URL=https://<your-project>.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<your-anon-public-key>
 ```
-*Note: If no credentials are provided, Lotta automatically runs in an instant client-side demo mode with pre-seeded contacts and cross-tab multi-user synchronization.*
+*(If keys are omitted, LOTTA runs in offline/dev test mode with instant cross-tab sync and pre-seeded test accounts!)*
 
-### 4. Database Setup
-To set up your live Supabase project, run the complete migration script located in `supabase_schema.sql` in your [Supabase SQL Editor](https://app.supabase.com).
+### 3. Database Migration
+Run the full SQL migration in your Supabase SQL Editor:
+- Script located at: `supabase_migration.sql`
 
-### 5. Run Development Server
+### 4. Development Server
 ```bash
 npm run dev
 ```
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
-### 6. Production Build
+### 5. Production Build
 ```bash
 npm run build
+npm start
 ```
-
----
-
-## 📁 Project Structure
-
-```
-├── src/
-│   ├── components/
-│   │   ├── chat/         # ChatArea, ChatSidebar, AddContactModal, InviteFriendsModal
-│   │   └── common/       # Logo, Avatar, LoadingSpinner, EmojiPicker, ConfirmationModal
-│   ├── context/          # AuthContext, ThemeContext, ToastContext
-│   ├── lib/              # Supabase client & Mock database fallback
-│   ├── pages/            # LoginPage, SignupPage, InvitePage, ChatsPage, ProfilePage, SettingsPage, NotFoundPage
-│   ├── services/         # chatService (Unified data & realtime layer)
-│   ├── types/            # Database and application types
-│   ├── App.tsx           # Route definitions and auth guards
-│   └── main.tsx          # App entry point
-├── supabase_schema.sql   # Complete Supabase schema, RLS policies & triggers
-└── package.json
-```
-
----
-
-## 🔒 Security
-- Row Level Security (RLS) enabled on all Supabase tables (`profiles`, `contacts`, `conversations`, `conversation_members`, `messages`).
-- Password hashes and sensitive auth details are isolated in the Supabase `auth` schema.

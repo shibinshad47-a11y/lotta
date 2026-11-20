@@ -3,9 +3,11 @@ node_modules/
 /.pnp
 .pnp.js
 
-# Production build artifacts
+# Next.js & Production build artifacts
+.next/
 dist/
 build/
+lotta_vite_old/
 
 # Environment files & secrets
 .env

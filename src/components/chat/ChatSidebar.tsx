@@ -1,335 +1,344 @@
+'use client';
+
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Search, UserPlus, Share2, Settings as SettingsIcon, MessageSquare, Users } from 'lucide-react';
+import Link from 'next/link';
+import {
+  Search,
+  UserPlus,
+  Sparkles,
+  MessageSquare,
+  Users,
+  Settings,
+  Plus,
+  LogOut,
+  CheckCheck,
+  Check,
+} from 'lucide-react';
 import { Logo } from '../common/Logo';
 import { Avatar } from '../common/Avatar';
 import { useAuth } from '../../context/AuthContext';
-import { Conversation, Contact } from '../../types/database';
-import { chatService } from '../../services/chatService';
+import { Conversation, PublicProfile } from '../../types/database';
 
 interface ChatSidebarProps {
   conversations: Conversation[];
-  contacts: Contact[];
+  friends: PublicProfile[];
   activeConversationId?: string;
   onSelectConversation: (id: string) => void;
-  onOpenAddContact: (query?: string) => void;
+  onStartChatWithFriend: (friendId: string) => void;
   onOpenInviteModal: () => void;
-  isLoading: boolean;
+  onOpenFriendRequestsModal: () => void;
+  isLoading?: boolean;
 }
 
 export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   conversations,
-  contacts,
+  friends,
   activeConversationId,
   onSelectConversation,
-  onOpenAddContact,
+  onStartChatWithFriend,
   onOpenInviteModal,
-  isLoading,
+  onOpenFriendRequestsModal,
+  isLoading = false,
 }) => {
-  const { profile } = useAuth();
-  const navigate = useNavigate();
+  const { profile, signOut } = useAuth();
+  const [search, setSearch] = useState('');
+  const [activeTab, setActiveTab] = useState<'chats' | 'friends'>('chats');
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [activeTab, setActiveTab] = useState<'chats' | 'contacts'>('chats');
-
-  // Filter conversations based on search
+  // Filter conversations
   const filteredConversations = conversations.filter(conv => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    const nameMatch = conv.other_user?.name.toLowerCase().includes(query);
-    const usernameMatch = conv.other_user?.username.toLowerCase().includes(query);
-    const lastMsgMatch = conv.last_message?.content.toLowerCase().includes(query);
-    return nameMatch || usernameMatch || lastMsgMatch;
+    if (!search.trim()) return true;
+    const name = conv.other_user?.name || '';
+    const username = conv.other_user?.username || '';
+    const lastMsg = conv.last_message?.content || '';
+    const q = search.toLowerCase();
+    return (
+      name.toLowerCase().includes(q) ||
+      username.toLowerCase().includes(q) ||
+      lastMsg.toLowerCase().includes(q)
+    );
   });
 
-  // Filter contacts based on search
-  const filteredContacts = contacts.filter(contact => {
-    if (!searchQuery.trim()) return true;
-    const query = searchQuery.toLowerCase();
-    const nameMatch = contact.contact_profile?.name.toLowerCase().includes(query);
-    const usernameMatch = contact.contact_profile?.username.toLowerCase().includes(query);
-    const phoneMatch = contact.contact_profile?.phone.includes(query);
-    return nameMatch || usernameMatch || phoneMatch;
+  // Filter friends
+  const filteredFriends = friends.filter(friend => {
+    if (!search.trim()) return true;
+    const q = search.toLowerCase();
+    return (
+      friend.name.toLowerCase().includes(q) ||
+      friend.username.toLowerCase().includes(q)
+    );
   });
 
-  const formatMessageTime = (dateStr?: string) => {
+  const formatTime = (dateStr?: string) => {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     const now = new Date();
     const isToday = date.toDateString() === now.toDateString();
-
-    const yesterday = new Date(now);
-    yesterday.setDate(yesterday.getDate() - 1);
-    const isYesterday = date.toDateString() === yesterday.toDateString();
-
     if (isToday) {
       return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    if (isYesterday) {
-      return 'Yesterday';
     }
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
   return (
-    <aside className="w-full md:w-80 lg:w-96 h-full flex flex-col bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 shrink-0">
+    <aside className="w-full md:w-80 lg:w-96 h-full flex flex-col bg-navy-950/95 border-r border-indigo-500/15 backdrop-blur-xl shrink-0 select-none">
       {/* Top Header */}
-      <div className="p-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+      <div className="p-4 border-b border-indigo-500/15 flex items-center justify-between">
         <Logo size="sm" />
 
-        {/* Quick action icons */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1.5">
+          {/* Friend Requests Button */}
           <button
-            onClick={() => onOpenAddContact()}
-            title="Add contact by phone"
-            className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+            type="button"
+            onClick={onOpenFriendRequestsModal}
+            className="p-2 rounded-xl text-indigo-300 hover:text-white hover:bg-white/5 transition-colors"
+            title="Search users & friend requests"
           >
-            <UserPlus className="w-4 h-4" />
+            <UserPlus className="w-5 h-5" />
           </button>
-          <button
-            onClick={onOpenInviteModal}
-            title="Invite friends"
-            className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-violet-50 dark:hover:bg-violet-950/40 hover:text-brand-600 dark:hover:text-brand-400 transition-colors"
+
+          {/* Profile / Settings Link */}
+          <Link
+            href="/profile"
+            className="p-2 rounded-xl text-indigo-300 hover:text-white hover:bg-white/5 transition-colors"
+            title="Profile & Settings"
           >
-            <Share2 className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => navigate('/settings')}
-            title="Settings & Profile"
-            className="p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-          >
-            <SettingsIcon className="w-4 h-4" />
-          </button>
-          <div
-            onClick={() => navigate('/profile')}
-            className="cursor-pointer ml-1 transform active:scale-95 transition-transform"
-            title="View Profile"
-          >
-            <Avatar
-              src={profile?.avatar_url}
-              name={profile?.name || 'User'}
-              size="sm"
-            />
-          </div>
+            <Settings className="w-5 h-5" />
+          </Link>
         </div>
+      </div>
+
+      {/* Primary Action: Invite Friends Banner */}
+      <div className="p-3">
+        <button
+          type="button"
+          onClick={onOpenInviteModal}
+          className="w-full p-3 rounded-2xl bg-gradient-to-r from-brand-600 via-indigo-600 to-lotta-blue hover:from-brand-500 hover:to-lotta-blue text-white shadow-glow flex items-center justify-between transition-all group"
+        >
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <Sparkles className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
+            </div>
+            <div className="text-left">
+              <div className="text-xs font-bold leading-tight">Invite Friends</div>
+              <div className="text-[10px] text-indigo-100/80 leading-tight">Share personal link to chat</div>
+            </div>
+          </div>
+          <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-white/20">
+            Share
+          </span>
+        </button>
       </div>
 
       {/* Search Input */}
-      <div className="px-4 py-3">
-        <div className="relative flex items-center">
-          <Search className="w-4 h-4 absolute left-3.5 text-gray-400 pointer-events-none" />
+      <div className="px-3 pb-2">
+        <div className="relative">
+          <Search className="w-4 h-4 text-indigo-300/50 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search chats or contacts..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800/70 border border-gray-200 dark:border-gray-700/60 rounded-2xl text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-violet-500 transition-all dark:text-white placeholder:text-gray-400"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search chats and friends..."
+            className="w-full bg-navy-900/70 border border-indigo-500/20 rounded-2xl pl-10 pr-4 py-2 text-xs text-white placeholder-indigo-300/40 focus:outline-none focus:border-brand-500 transition-colors"
           />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
-            >
-              Clear
-            </button>
-          )}
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="px-4 flex gap-2 border-b border-gray-100 dark:border-gray-800 pb-2">
+      {/* Tabs: Chats & Friends */}
+      <div className="flex border-b border-indigo-500/15 px-3">
         <button
+          type="button"
           onClick={() => setActiveTab('chats')}
-          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+          className={`flex-1 py-2 text-xs font-semibold border-b-2 transition-all flex items-center justify-center gap-1.5 ${
             activeTab === 'chats'
-              ? 'bg-brand-gradient text-white shadow-soft-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+              ? 'border-brand-500 text-white'
+              : 'border-transparent text-indigo-300/50 hover:text-white'
           }`}
         >
           <MessageSquare className="w-3.5 h-3.5" />
           Chats ({conversations.length})
         </button>
+
         <button
-          onClick={() => setActiveTab('contacts')}
-          className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
-            activeTab === 'contacts'
-              ? 'bg-brand-gradient text-white shadow-soft-sm'
-              : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+          type="button"
+          onClick={() => setActiveTab('friends')}
+          className={`flex-1 py-2 text-xs font-semibold border-b-2 transition-all flex items-center justify-center gap-1.5 ${
+            activeTab === 'friends'
+              ? 'border-brand-500 text-white'
+              : 'border-transparent text-indigo-300/50 hover:text-white'
           }`}
         >
           <Users className="w-3.5 h-3.5" />
-          Contacts ({contacts.length})
+          Friends ({friends.length})
         </button>
       </div>
 
-      {/* List Container */}
-      <div className="flex-1 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-800/40">
-        {isLoading && (
-          <div className="py-12 text-center text-sm text-gray-400">
-            <div className="w-6 h-6 border-2 border-violet-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
-            Loading chats...
+      {/* List Area */}
+      <div className="flex-1 overflow-y-auto px-2 py-2 flex flex-col gap-1 custom-scrollbar">
+        {isLoading ? (
+          <div className="flex flex-col gap-2 p-2">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-16 rounded-2xl bg-navy-900/40 animate-pulse" />
+            ))}
           </div>
-        )}
-
-        {/* CHATS TAB */}
-        {!isLoading && activeTab === 'chats' && (
-          <>
-            {filteredConversations.length > 0 ? (
-              filteredConversations.map(conv => {
-                const isActive = conv.id === activeConversationId;
-                const isMyMessage = conv.last_message?.sender_id === profile?.id;
-
-                return (
-                  <div
-                    key={conv.id}
-                    onClick={() => onSelectConversation(conv.id)}
-                    className={`flex items-center gap-3 p-3.5 cursor-pointer transition-colors ${
-                      isActive
-                        ? 'bg-violet-50/70 dark:bg-violet-950/30 border-l-4 border-violet-600 dark:border-violet-400'
-                        : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'
-                    }`}
-                  >
-                    <Avatar
-                      src={conv.other_user?.avatar_url}
-                      name={conv.other_user?.name || 'Contact'}
-                      size="md"
-                      isOnline={Boolean(conv.other_user?.last_seen && new Date().getTime() - new Date(conv.other_user.last_seen).getTime() < 10 * 60 * 1000)}
-                    />
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="font-semibold text-sm text-gray-900 dark:text-white truncate">
-                          {conv.other_user?.name || 'Unknown User'}
-                        </span>
-                        <span className="text-[11px] text-gray-400 shrink-0 ml-2">
-                          {formatMessageTime(conv.last_message?.created_at || conv.updated_at)}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <p className="text-xs text-gray-500 dark:text-gray-400 truncate pr-2">
-                          {conv.last_message ? (
-                            <>
-                              {isMyMessage && <span className="font-medium text-gray-700 dark:text-gray-300">You: </span>}
-                              {conv.last_message.content}
-                            </>
-                          ) : (
-                            <span className="italic text-gray-400">Start the conversation...</span>
-                          )}
-                        </p>
-
-                        {Boolean(conv.unread_count && conv.unread_count > 0) && (
-                          <span className="shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-brand-gradient text-white shadow-sm">
-                            {conv.unread_count}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <div className="p-8 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/40 text-brand-600 dark:text-brand-400 mx-auto mb-3 flex items-center justify-center">
-                  <MessageSquare className="w-6 h-6" />
-                </div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                  {searchQuery ? `No chats matching "${searchQuery}"` : 'No chats yet'}
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 max-w-xs mx-auto">
-                  {searchQuery
-                    ? 'Start a new conversation with this number or username:'
-                    : 'Add a contact by phone number or invite friends to start chatting.'}
-                </p>
-                {searchQuery ? (
-                  <button
-                    onClick={() => onOpenAddContact(searchQuery)}
-                    className="px-4 py-2 bg-brand-gradient text-white text-xs font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm inline-flex items-center gap-1.5"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" />
-                    Chat with "{searchQuery}"
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => onOpenAddContact()}
-                    className="px-4 py-2 bg-brand-gradient text-white text-xs font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm inline-flex items-center gap-1.5"
-                  >
-                    <UserPlus className="w-3.5 h-3.5" />
-                    Add a Contact
-                  </button>
-                )}
+        ) : activeTab === 'chats' ? (
+          filteredConversations.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-navy-900/80 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3">
+                <MessageSquare className="w-6 h-6" />
               </div>
-            )}
-          </>
-        )}
+              <h4 className="text-xs font-bold text-white mb-1">No chats yet</h4>
+              <p className="text-[11px] text-indigo-200/60 max-w-[200px] mb-4">
+                Click Invite Friends above to share your link and start chatting!
+              </p>
+              <button
+                type="button"
+                onClick={onOpenInviteModal}
+                className="px-3 py-1.5 rounded-xl bg-brand-600/30 hover:bg-brand-600 text-brand-300 hover:text-white border border-brand-500/40 text-xs font-medium transition-all"
+              >
+                Get Invite Link
+              </button>
+            </div>
+          ) : (
+            filteredConversations.map(conv => {
+              const other = conv.other_user;
+              const isActive = conv.id === activeConversationId;
+              const hasUnread = (conv.unread_count || 0) > 0;
 
-        {/* CONTACTS TAB */}
-        {!isLoading && activeTab === 'contacts' && (
-          <>
-            {filteredContacts.length > 0 ? (
-              filteredContacts.map(contact => {
-                const p = contact.contact_profile;
-                if (!p) return null;
+              return (
+                <div
+                  key={conv.id}
+                  onClick={() => onSelectConversation(conv.id)}
+                  className={`p-3 rounded-2xl cursor-pointer transition-all flex items-center gap-3 border ${
+                    isActive
+                      ? 'bg-navy-800/90 border-brand-500/50 shadow-soft'
+                      : 'border-transparent hover:bg-navy-900/60 hover:border-indigo-500/10'
+                  }`}
+                >
+                  <Avatar
+                    src={other?.avatar_url}
+                    name={other?.name || 'User'}
+                    size="md"
+                    isOnline={other?.last_seen ? true : false}
+                  />
 
-                return (
-                  <div
-                    key={contact.id}
-                    onClick={async () => {
-                      if (profile) {
-                        try {
-                          const existingConv = conversations.find(c => c.other_user?.id === p.id);
-                          if (existingConv) {
-                            onSelectConversation(existingConv.id);
-                          } else {
-                            const newConv = await chatService.getOrCreateConversation(profile.id, p.id);
-                            onSelectConversation(newConv.id);
-                          }
-                        } catch (err) {
-                          console.error('Failed to open conversation:', err);
-                        }
-                      }
-                    }}
-                    className="flex items-center gap-3 p-3.5 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
-                  >
-                    <Avatar
-                      src={p.avatar_url}
-                      name={p.name}
-                      size="md"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">
-                        {p.name}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-1 mb-0.5">
+                      <h4
+                        className={`text-xs font-bold truncate ${
+                          isActive ? 'text-white' : 'text-white/90'
+                        }`}
+                      >
+                        {other?.name || 'Direct Chat'}
+                      </h4>
+                      <span className="text-[10px] text-indigo-300/50 shrink-0">
+                        {formatTime(conv.last_message?.created_at || conv.updated_at)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-1">
+                      <p
+                        className={`text-[11px] truncate ${
+                          hasUnread
+                            ? 'text-white font-medium'
+                            : 'text-indigo-300/60'
+                        }`}
+                      >
+                        {conv.last_message?.is_deleted
+                          ? 'This message was deleted'
+                          : conv.last_message?.content || (
+                              conv.last_message?.attachments && conv.last_message.attachments.length > 0
+                                ? '📷 Photo'
+                                : 'No messages yet'
+                            )}
                       </p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                        @{p.username} • {p.phone}
-                      </p>
+
+                      {hasUnread && (
+                        <span className="shrink-0 w-4 h-4 rounded-full bg-brand-500 text-white text-[10px] font-bold flex items-center justify-center">
+                          {conv.unread_count}
+                        </span>
+                      )}
                     </div>
                   </div>
-                );
-              })
-            ) : (
-              <div className="p-8 text-center">
-                <div className="w-12 h-12 rounded-2xl bg-violet-50 dark:bg-violet-950/40 text-brand-600 dark:text-brand-400 mx-auto mb-3 flex items-center justify-center">
-                  <Users className="w-6 h-6" />
                 </div>
-                <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-1">
-                  {searchQuery ? 'No contacts matched' : 'No contacts saved yet'}
-                </h4>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mb-4 max-w-xs mx-auto">
-                  Find friends by their phone number or send an invite link.
-                </p>
+              );
+            })
+          )
+        ) : (
+          // Friends Tab
+          filteredFriends.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-6 text-center">
+              <div className="w-12 h-12 rounded-2xl bg-navy-900/80 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-3">
+                <Users className="w-6 h-6" />
+              </div>
+              <h4 className="text-xs font-bold text-white mb-1">No friends added yet</h4>
+              <p className="text-[11px] text-indigo-200/60 max-w-[200px] mb-4">
+                Share your invite link or search usernames to connect.
+              </p>
+              <button
+                type="button"
+                onClick={onOpenFriendRequestsModal}
+                className="px-3 py-1.5 rounded-xl bg-brand-600/30 hover:bg-brand-600 text-brand-300 hover:text-white border border-brand-500/40 text-xs font-medium transition-all"
+              >
+                Search Users
+              </button>
+            </div>
+          ) : (
+            filteredFriends.map(friend => (
+              <div
+                key={friend.id}
+                onClick={() => onStartChatWithFriend(friend.id)}
+                className="p-3 rounded-2xl cursor-pointer hover:bg-navy-900/60 border border-transparent hover:border-indigo-500/15 transition-all flex items-center justify-between"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <Avatar
+                    src={friend.avatar_url}
+                    name={friend.name}
+                    size="md"
+                    isOnline={friend.last_seen ? true : false}
+                  />
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-bold text-white truncate">{friend.name}</h4>
+                    <p className="text-[11px] text-indigo-300/60 truncate">@{friend.username}</p>
+                  </div>
+                </div>
+
                 <button
-                  onClick={() => onOpenAddContact()}
-                  className="px-4 py-2 bg-brand-gradient text-white text-xs font-semibold rounded-xl hover:opacity-90 transition-opacity shadow-sm inline-flex items-center gap-1.5"
+                  type="button"
+                  className="p-2 rounded-xl bg-brand-600/20 hover:bg-brand-600 text-brand-300 hover:text-white transition-colors"
+                  title="Message"
                 >
-                  <UserPlus className="w-3.5 h-3.5" />
-                  Add Contact
+                  <MessageSquare className="w-4 h-4" />
                 </button>
               </div>
-            )}
-          </>
+            ))
+          )
         )}
       </div>
+
+      {/* Bottom Profile Bar */}
+      {profile && (
+        <div className="p-3 border-t border-indigo-500/15 bg-navy-900/50 flex items-center justify-between">
+          <Link
+            href="/profile"
+            className="flex items-center gap-2.5 min-w-0 hover:opacity-90 transition-opacity"
+          >
+            <Avatar src={profile.avatar_url} name={profile.name} size="sm" />
+            <div className="min-w-0">
+              <h4 className="text-xs font-bold text-white truncate">{profile.name}</h4>
+              <p className="text-[10px] text-indigo-300/60 truncate">@{profile.username}</p>
+            </div>
+          </Link>
+
+          <button
+            type="button"
+            onClick={signOut}
+            className="p-2 rounded-xl text-indigo-300/50 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+            title="Log Out"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </aside>
   );
 };
