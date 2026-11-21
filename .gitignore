@@ -5,9 +5,9 @@ node_modules/
 
 # Next.js & Production build artifacts
 .next/
+out/
 dist/
 build/
-lotta_vite_old/
 
 # Environment files & secrets
 .env
@@ -15,6 +15,11 @@ lotta_vite_old/
 .env.development.local
 .env.test.local
 .env.production.local
+*.local
+
+# Backups & temp
+lotta_vite_old/
+lotta_vite_backup/
 
 # Operating System & IDE
 .DS_Store
